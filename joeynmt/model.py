@@ -102,11 +102,11 @@ class Model(nn.Module):
         :param src_mask:
         :return: encoder outputs (output, hidden_concat)
         """
-		if self.factors_option = "add":
-			factors_option_embed = self.src_embed(src) + self.factor_embed(factor)
-		if self.factors_option = "concatenate":
-			factors_option_embed= cat((self.src_embed(src), self.factor_embed(factor)), 2)
-        return self.encoder(factors_option_embed, src_length, src_mask)
+		if self.factor_combine = "add":
+			factor_combine_embed = self.src_embed(src) + self.factor_embed(factor)
+		if self.factor_combine = "concatenate":
+			factor_combine_embed= cat((self.src_embed(src), self.factor_embed(factor)), 2)
+        return self.encoder(factor_combine_embed, src_length, src_mask)
 
     def decode(self, encoder_output: Tensor, encoder_hidden: Tensor,
                src_mask: Tensor, trg_input: Tensor,
@@ -267,13 +267,13 @@ def build_model(cfg: dict = None,
                                      emb_size=src_embed.embedding_dim,
                                      emb_dropout=enc_emb_dropout)
     else:
-	factors_option = cfg["encoder"].get("factors_option", None)
-        if factors_option == "add":
+	factor_combine = cfg["encoder"].get("factor_combine", None)
+        if factor_combine == "add":
             if src_embed.embedding_dim != factor_embed.embedding_dim:
                 raise ConfigurationError(
                     "Embedding sizes of source and factor embeddings are incompatible")
             encoder_emb_size = src_embed.embedding_dim
-        elif factors_option == "concatenate":
+        elif factor_combine == "concatenate":
             encoder_emb_size = src_embed.embedding_dim + factor_embed.embedding_dim
 
         encoder = RecurrentEncoder(**cfg["encoder"],
@@ -296,7 +296,7 @@ def build_model(cfg: dict = None,
                   src_embed=src_embed, trg_embed=trg_embed,
                   src_vocab=src_vocab, trg_vocab=trg_vocab,
 				  factor_embed=factor_embed, factor_vocab=factor_vocab,
-                  factors_option=factors_option)
+                  factor_combine=factor_combine)
 
     # tie softmax layer with trg embeddings
     if cfg.get("tied_softmax", False):
