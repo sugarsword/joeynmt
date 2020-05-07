@@ -64,7 +64,7 @@ class Model(nn.Module):
         self.eos_index = self.trg_vocab.stoi[EOS_TOKEN]
 
     # pylint: disable=arguments-differ
-     def forward(self, src: Tensor, factor: Tensor, trg_input: Tensor, src_mask: Tensor,
+    def forward(self, src: Tensor, factor: Tensor, trg_input: Tensor, src_mask: Tensor,
                 src_lengths: Tensor, factor_lengths: Tensor, trg_mask: Tensor = None) -> (
         Tensor, Tensor, Tensor, Tensor):
         """
