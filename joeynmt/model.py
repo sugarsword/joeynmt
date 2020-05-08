@@ -30,53 +30,52 @@ class Model(nn.Module):
                  encoder: Encoder,
                  decoder: Decoder,
                  src_embed: Embeddings,
-				 factor_embed: Embeddings,
+		 factor_embed: Embeddings,
                  trg_embed: Embeddings,
                  src_vocab: Vocabulary,
-				 factor_vocab: Vocabulary,
+		 factor_vocab: Vocabulary,
                  trg_vocab: Vocabulary,
-				 factor_option: str) -> None:
+		 factor_option: str) -> None:
         """
         Create a new encoder-decoder model
 
         :param encoder: encoder
         :param decoder: decoder
         :param src_embed: source embedding
-		:param factor_embed: source factor embedding
+	:param factor_embed: source factor embedding
         :param trg_embed: target embedding
         :param src_vocab: source vocabulary
-		:param factor_vocab: source factor vocabulary
+	:param factor_vocab: source factor vocabulary
         :param trg_vocab: target vocabulary
         """
         super(Model, self).__init__()
 
         self.src_embed = src_embed
-		self.factor_embed = factor_embed
+	self.factor_embed = factor_embed
         self.trg_embed = trg_embed
         self.encoder = encoder
         self.decoder = decoder
         self.src_vocab = src_vocab
-		self.factor_vocab = factor_vocab
+	self.factor_vocab = factor_vocab
         self.trg_vocab = trg_vocab
-		self.factor_option = factor_option
+	self.factor_combine = factor_combine
         self.bos_index = self.trg_vocab.stoi[BOS_TOKEN]
         self.pad_index = self.trg_vocab.stoi[PAD_TOKEN]
         self.eos_index = self.trg_vocab.stoi[EOS_TOKEN]
 
     # pylint: disable=arguments-differ
     def forward(self, src: Tensor, factor: Tensor, trg_input: Tensor, src_mask: Tensor,
-                src_lengths: Tensor, factor_lengths: Tensor, trg_mask: Tensor = None) -> (
-        Tensor, Tensor, Tensor, Tensor):
+                src_lengths: Tensor, factor_lengths: Tensor, trg_mask: Tensor = None) -> (Tensor, Tensor, Tensor, Tensor):
         """
         First encodes the source sentence.
         Then produces the target one word at a time.
 
         :param src: source input
-		:param factor: factor input
+	:param factor: factor input
         :param trg_input: target input
         :param src_mask: source mask
         :param src_lengths: length of source inputs
-		:param self.factor_vocab: length of factor input
+	:param self.factor_vocab: length of factor input
         :param trg_mask: target mask
         :return: decoder outputs
         """
@@ -97,15 +96,16 @@ class Model(nn.Module):
         Encodes the source sentence.
 
         :param src:
-		:param factor:
+	:param factor:
         :param src_length:
         :param src_mask:
         :return: encoder outputs (output, hidden_concat)
         """
-		if self.factor_combine = "add":
-			factor_combine_embed = self.src_embed(src) + self.factor_embed(factor)
-		if self.factor_combine = "concatenate":
-			factor_combine_embed= cat((self.src_embed(src), self.factor_embed(factor)), 2)
+	if self.factor_combine = "add":
+		factor_combine_embed = self.src_embed(src) + self.factor_embed(factor)
+		print(factor_combine_embed.shape[0])
+	if self.factor_combine = "concatenate":
+		factor_combine_embed= cat((self.src_embed(src), self.factor_embed(factor)), 2)
         return self.encoder(factor_combine_embed, src_length, src_mask)
 
     def decode(self, encoder_output: Tensor, encoder_hidden: Tensor,
@@ -218,7 +218,7 @@ class Model(nn.Module):
 
 def build_model(cfg: dict = None,
                 src_vocab: Vocabulary = None,
-				factor_vocab: Vocabulary = None,
+		factor_vocab: Vocabulary = None,
                 trg_vocab: Vocabulary = None) -> Model:
     """
     Build and initialize the model according to the configuration.
@@ -271,7 +271,7 @@ def build_model(cfg: dict = None,
         if factor_combine == "add":
             if src_embed.embedding_dim != factor_embed.embedding_dim:
                 raise ConfigurationError(
-                    "Embedding sizes of source and factor embeddings are incompatible")
+                    "Dimensions of source and factor embeddings are not compatible")
             encoder_emb_size = src_embed.embedding_dim
         elif factor_combine == "concatenate":
             encoder_emb_size = src_embed.embedding_dim + factor_embed.embedding_dim
@@ -295,13 +295,12 @@ def build_model(cfg: dict = None,
     model = Model(encoder=encoder, decoder=decoder,
                   src_embed=src_embed, trg_embed=trg_embed,
                   src_vocab=src_vocab, trg_vocab=trg_vocab,
-				  factor_embed=factor_embed, factor_vocab=factor_vocab,
+		  factor_embed=factor_embed, factor_vocab=factor_vocab,
                   factor_combine=factor_combine)
 
     # tie softmax layer with trg embeddings
     if cfg.get("tied_softmax", False):
-        if trg_embed.lut.weight.shape == \
-                model.decoder.output_layer.weight.shape:
+        if trg_embed.lut.weight.shape == model.decoder.output_layer.weight.shape:
             # (also) share trg embeddings and softmax layer:
             model.decoder.output_layer.weight = trg_embed.lut.weight
         else:
