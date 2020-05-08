@@ -35,7 +35,7 @@ class Model(nn.Module):
                  src_vocab: Vocabulary,
 		 factor_vocab: Vocabulary,
                  trg_vocab: Vocabulary,
-		 factor_option: str) -> None:
+		 factor_combine: str) -> None:
         """
         Create a new encoder-decoder model
 
@@ -51,14 +51,14 @@ class Model(nn.Module):
         super(Model, self).__init__()
 
         self.src_embed = src_embed
-	self.factor_embed = factor_embed
+        self.factor_embed = factor_embed
         self.trg_embed = trg_embed
         self.encoder = encoder
         self.decoder = decoder
         self.src_vocab = src_vocab
-	self.factor_vocab = factor_vocab
+        self.factor_vocab = factor_vocab
         self.trg_vocab = trg_vocab
-	self.factor_combine = factor_combine
+        self.factor_combine = factor_combine
         self.bos_index = self.trg_vocab.stoi[BOS_TOKEN]
         self.pad_index = self.trg_vocab.stoi[PAD_TOKEN]
         self.eos_index = self.trg_vocab.stoi[EOS_TOKEN]
@@ -101,11 +101,11 @@ class Model(nn.Module):
         :param src_mask:
         :return: encoder outputs (output, hidden_concat)
         """
-	if self.factor_combine = "add":
-		factor_combine_embed = self.src_embed(src) + self.factor_embed(factor)
-		print(factor_combine_embed.shape[0])
-	if self.factor_combine = "concatenate":
-		factor_combine_embed= cat((self.src_embed(src), self.factor_embed(factor)), 2)
+        if self.factor_combine == "add":
+            factor_combine_embed = self.src_embed(src) + self.factor_embed(factor)
+            print(factor_combine_embed.shape[0])
+        if self.factor_combine == "concatenate":
+            factor_combine_embed= cat((self.src_embed(src), self.factor_embed(factor)), 2)
         return self.encoder(factor_combine_embed, src_length, src_mask)
 
     def decode(self, encoder_output: Tensor, encoder_hidden: Tensor,
@@ -230,14 +230,13 @@ def build_model(cfg: dict = None,
     :return: built and initialized model
     """
     src_padding_idx = src_vocab.stoi[PAD_TOKEN]
-	factor_padding_idx = factor_vocab.stoi[PAD_TOKEN]
+    factor_padding_idx = factor_vocab.stoi[PAD_TOKEN]
     trg_padding_idx = trg_vocab.stoi[PAD_TOKEN]
 
     src_embed = Embeddings(
         **cfg["encoder"]["embeddings"], vocab_size=len(src_vocab),
         padding_idx=src_padding_idx)
-		
-	factor_embed = Embeddings(
+    factor_embed = Embeddings(
          **cfg["encoder"]["factor_embeddings"], vocab_size=len(factor_vocab),
          padding_idx=factor_padding_idx)
 
@@ -267,7 +266,7 @@ def build_model(cfg: dict = None,
                                      emb_size=src_embed.embedding_dim,
                                      emb_dropout=enc_emb_dropout)
     else:
-	factor_combine = cfg["encoder"].get("factor_combine", None)
+        factor_combine = cfg["encoder"].get("factor_combine", None)
         if factor_combine == "add":
             if src_embed.embedding_dim != factor_embed.embedding_dim:
                 raise ConfigurationError(
