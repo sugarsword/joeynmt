@@ -103,7 +103,6 @@ class Model(nn.Module):
         """
         if self.factor_combine == "add":
             factor_combine_embed = self.src_embed(src) + self.factor_embed(factor)
-            print(factor_combine_embed.shape[0])
         if self.factor_combine == "concatenate":
             factor_combine_embed= cat((self.src_embed(src), self.factor_embed(factor)), 2)
         return self.encoder(factor_combine_embed, src_length, src_mask)
@@ -263,7 +262,7 @@ def build_model(cfg: dict = None,
                "for transformer, emb_size must be hidden_size"
 
         encoder = TransformerEncoder(**cfg["encoder"],
-                                     emb_size=src_embed.embedding_dim,
+                                    emb_size=src_embed.embedding_dim,
                                      emb_dropout=enc_emb_dropout)
     else:
         factor_combine = cfg["encoder"].get("factor_combine", None)
