@@ -6,9 +6,9 @@ Module to represent whole models
 import numpy as np
 
 import torch.nn as nn
-from torch import Tensor
+from torch import Tensor, cat, add
 import torch.nn.functional as F
-from torch import cat
+
 
 from joeynmt.initialization import initialize_model
 from joeynmt.embeddings import Embeddings
@@ -88,7 +88,7 @@ class Model(nn.Module):
                            src_mask=src_mask, trg_input=trg_input,
                            unroll_steps=unroll_steps,
                            trg_mask=trg_mask)
-						   
+					   
 
     def encode(self, src: Tensor, factor: Tensor, src_length: Tensor, src_mask: Tensor) \
         -> (Tensor, Tensor):
@@ -102,7 +102,7 @@ class Model(nn.Module):
         :return: encoder outputs (output, hidden_concat)
         """
         if self.factor_combine == "add":
-            factor_combine_embed = self.src_embed(src) + self.factor_embed(factor)
+            factor_combine_embed = add(self.src_embed(src), self.factor_embed(factor))
         if self.factor_combine == "concatenate":
             factor_combine_embed= cat((self.src_embed(src), self.factor_embed(factor)), 2)
         return self.encoder(factor_combine_embed, src_length, src_mask)
@@ -265,7 +265,7 @@ def build_model(cfg: dict = None,
                                     emb_size=src_embed.embedding_dim,
                                      emb_dropout=enc_emb_dropout)
     else:
-        factor_combine = cfg["encoder"].get("factor_combine", None)
+        factor_combine = cfg["encoder"].get("factor_combine")
         if factor_combine == "add":
             if src_embed.embedding_dim != factor_embed.embedding_dim:
                 raise ConfigurationError(
