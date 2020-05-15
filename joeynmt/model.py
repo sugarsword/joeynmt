@@ -104,7 +104,7 @@ class Model(nn.Module):
         if self.factor_combine == "add":
             factor_combine_embed = add(self.src_embed(src), self.factor_embed(factor))
         if self.factor_combine == "concatenate":
-            factor_combine_embed= cat([self.src_embed(src), self.factor_embed(factor)], 1)
+            factor_combine_embed= cat((self.src_embed(src), self.factor_embed(factor)), 1)
         return self.encoder(factor_combine_embed, src_length, src_mask)
 
     def decode(self, encoder_output: Tensor, encoder_hidden: Tensor,
